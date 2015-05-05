@@ -30,7 +30,7 @@
 00000000000i[     ]   SB16 support: no
 00000000000i[     ]   USB support: no
 00000000000i[     ]   VGA extension support:  
-00000000000i[MEM0 ] allocated memory at 0x7f58ab21d010. after alignment, vector=0x7f58ab21e000
+00000000000i[MEM0 ] allocated memory at 0x7f5a6c3e5010. after alignment, vector=0x7f5a6c3e6000
 00000000000i[MEM0 ] 4.00MB
 00000000000i[MEM0 ] rom at 0xffff0000/65536 ('/usr/local/pintos/share/bochs/BIOS-bochs-latest')
 00000000000i[MEM0 ] rom at 0xc0000/32768 ('/usr/local/pintos/share/bochs/VGABIOS-lgpl-latest')
@@ -46,7 +46,7 @@
 00000000000i[     ] init_mem of 'extfpuirq' plugin device by virtual method
 00000000000i[     ] init_mem of 'speaker' plugin device by virtual method
 00000000000i[     ] init_dev of 'harddrv' plugin device by virtual method
-00000000000i[HD   ] HD on ata0-0: '/tmp/cAfV5XoGWA.dsk' 'flat' mode 
+00000000000i[HD   ] HD on ata0-0: '/tmp/yGm6lK8ovK.dsk' 'flat' mode 
 00000000000i[HD   ] Using boot sequence disk, none, none
 00000000000i[HD   ] Floppy boot signature check is enabled
 00000000000i[     ] init_dev of 'keyboard' plugin device by virtual method
@@ -65,8 +65,7 @@
 00000000000i[     ] reset of 'parallel' plugin device by virtual method
 00000000000i[     ] reset of 'extfpuirq' plugin device by virtual method
 00000000000i[     ] reset of 'speaker' plugin device by virtual method
-00000000000p[     ] >>PANIC<< Failed to bind socket
-
+00000000000p[     ] >>PANIC<< SIGNAL 2 caught
 00000000000i[SYS  ] Last time is 0
 00000000000i[NGUI ] bx_nogui_gui_c::exit() not implemented yet.
 00000000000i[     ] restoring default signal behavior

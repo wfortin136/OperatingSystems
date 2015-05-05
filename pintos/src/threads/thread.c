@@ -225,6 +225,8 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
 
+  thread_set_priority(thread_current()->priority);
+
   return tid;
 }
 
@@ -355,11 +357,46 @@ thread_foreach (thread_action_func *func, void *aux)
     }
 }
 
+bool return_max_pri(const struct list_elem * current_elem, const struct list_elem * next_elem, void *aux){
+  
+  struct thread * cur;
+  struct thread * next;
+  int64_t cur_t, next_t;
+
+  cur = list_entry(current_elem, struct thread, elem);
+  next = list_entry(next_elem, struct thread, elem);
+  
+  cur_t = cur->priority;
+  next_t = next->priority;
+
+  if(cur_t < next_t) {
+    return true;
+  }
+  else{
+    return false;
+  }
+  
+}
+
+
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) 
-{
+{ 
+  struct list_elem * max_elem;
+  struct thread * this_t;
+  int this_t_p;
+
   thread_current ()->priority = new_priority;
+ 
+  max_elem = list_max(&ready_list, (list_less_func*) &return_max_pri, NULL); 
+
+  this_t = list_entry(max_elem, struct thread, elem);  
+ 
+  this_t_p = this_t->priority;
+  
+  if(this_t_p > new_priority) thread_yield();
+
 }
 
 /* Returns the current thread's priority. */
@@ -626,33 +663,48 @@ bool thread_compare(const struct list_elem * current_elem, const struct list_ele
   
 }
 
-
 void push_to_sleeplist(void)
 {
   struct list_elem *current_elem;
   struct thread * this;
-
-  struct list_elem *begin1;
-  struct list_elem *begin2;
-  struct thread * b1;
-  struct thread * b2;
+  struct lock list_i;
+  enum intr_level intr_state; 
   
   this = thread_current();
   current_elem = &(this->elem);
 
-/***RECHECK***/	
+  lock_init(&list_i);
+  
   if(list_empty(&sleep_list)){
-    begin1 = list_begin(&sleep_list);
-    b1 = list_entry(begin1, struct thread, elem);
-    printf("%p \n", b1);
+    
+    intr_state = intr_disable();
     list_push_front(&sleep_list, current_elem); 
-    begin2 = list_begin(&sleep_list);
-    b2 = list_entry(begin2, struct thread, elem);
-    printf("%p \n", b2);
+    thread_block();
+    intr_set_level(intr_state);
   }
   else { 
+    intr_state = intr_disable();
     list_insert_ordered(&sleep_list, current_elem, (list_less_func  *) &thread_compare, NULL); 
+    thread_block();
+    intr_set_level(intr_state);
   }  
-  printf("ked");
 }
 
+void update_sleeplist(int64_t ticks){
+  struct list_elem * e;
+  struct thread * cur;
+  int64_t cur_t;
+
+  e = list_begin(&sleep_list);
+
+  while(e !=list_end(&sleep_list)){
+    cur = list_entry(e, struct thread, elem); 
+    cur_t = cur->sleep_tick;  
+    if(cur_t <= ticks) {
+      e = list_remove(e);
+      thread_unblock(cur);
+    }
+    else break;
+  }
+
+}  

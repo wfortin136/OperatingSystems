@@ -140,4 +140,5 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
 void push_to_sleeplist(void);
+void update_sleeplist(int64_t);
 #endif /* threads/thread.h */

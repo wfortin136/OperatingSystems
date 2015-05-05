@@ -19,7 +19,7 @@ Executing 'priority-donate-nest':
 (priority-donate-nest) Low thread should have priority 31.  Actual priority: 31.
 (priority-donate-nest) end
 Execution of 'priority-donate-nest' complete.
-Timer: 87 ticks
+Timer: 88 ticks
 Thread: 0 idle ticks, 90 kernel ticks, 0 user ticks
 Console: 891 characters output
 Keyboard: 0 keys pressed
