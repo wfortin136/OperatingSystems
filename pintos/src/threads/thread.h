@@ -91,6 +91,15 @@ struct thread
     struct list_elem allelem;           /* List element for all threads list. */
 /********************BILLY*****************/
     int64_t sleep_tick;    
+    //Thread's base priority in the event it gets a donated priority
+    int priority_base;
+    //Possible donors
+    struct list donors;
+    //The element added to other thread's donation lists
+    struct list_elem donation;
+    //Lock thread is waiting for
+    struct lock *lock_waiting_for;
+
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
