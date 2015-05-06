@@ -388,20 +388,48 @@ void
 thread_set_priority (int new_priority) 
 { 
   struct list_elem * max_elem;
-  struct thread * this_t;
-  int this_t_p;
+  struct thread * t;
+  struct thread * temp_t;
+  int t_pri, t_prev_pri;
 
-  //Turn off interupts to avoid race
   enum intr_level old_level = intr_disable();
-  thread_current ()->priority = new_priority;
- 
-  max_elem = list_max(&ready_list, (list_less_func*) &return_max_pri, NULL); 
+  t = thread_current();
+  t_prev_pri = t->priority;
+  t->priority_base = new_priority;
+  t->priority = new_priority;
 
-  this_t = list_entry(max_elem, struct thread, elem);  
- 
-  this_t_p = this_t->priority;
+  //If any current donors have a higer priority, accept their donation
+  if( !list_empty(&t->donors)){
+    temp_t = list_entry(list_front(&t->donors), struct thread, donation);
+    if(temp_t->priority > t->priority){
+      t->priority = temp_t->priority;
+    }
+  }
+
+  //If I just got a higher priority, donate it to any waiting threads
+  //*
+  if (t_prev_pri < t->priority){
+    int depth = 0;
+    struct lock *l = t->lock_waiting_for;
+    while(l && depth < 8){
+      depth++;
+      if(!l->holder){
+        break;
+      }
+      if(l->holder->priority >= t->priority){
+        break;
+      }
+      l->holder->priority = t->priority;
+      t = l->holder;
+      l = t->lock_waiting_for;
+    }
+  }
+
+  //Make sure there are no higher threads in the readylist
+  max_elem = list_max(&ready_list, (list_less_func*) &return_max_pri, NULL); 
+  temp_t = list_entry(max_elem, struct thread, elem);  
   
-  if(this_t_p > new_priority) thread_yield();
+  if(temp_t->priority > t->priority) thread_yield();
 
   intr_set_level(old_level);
 }
@@ -410,7 +438,11 @@ thread_set_priority (int new_priority)
 int
 thread_get_priority (void) 
 {
-  return thread_current ()->priority;
+  //Turn off interupts to avoid race
+  enum intr_level old_level = intr_disable();
+  int temp_p = thread_current()->priority;
+  intr_set_level(old_level);
+  return temp_p;
 }
 
 /* Sets the current thread's nice value to NICE. */
@@ -530,6 +562,11 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority = priority;
   t->magic = THREAD_MAGIC;
   list_push_back (&all_list, &t->allelem);
+
+  //Set base priority
+  t->priority_base = priority;
+  t->lock_waiting_for = NULL;
+  list_init(&t->donors);
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
@@ -550,6 +587,7 @@ alloc_frame (struct thread *t, size_t size)
    empty.  (If the running thread can continue running, then it
    will be in the run queue.)  If the run queue is empty, return
    idle_thread. */
+//Aha - schedule() is always going to take the first element in ready_list
 static struct thread *
 next_thread_to_run (void) 
 {
@@ -651,9 +689,7 @@ bool thread_compare(const struct list_elem * current_elem, const struct list_ele
   
   struct thread * cur;
   struct thread * next;
-  int64_t current_time, cur_t, next_t;
-
-  current_time = timer_ticks();
+  int64_t cur_t, next_t;
 
   cur = list_entry(current_elem, struct thread, elem);
   next = list_entry(next_elem, struct thread, elem);
