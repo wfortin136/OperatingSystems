@@ -10,24 +10,13 @@ Initializing EHCI
 Initializing UHCI
 Boot complete.
 Executing 'mlfqs-nice-10':
-(mlfqs-nice-10) begin
-(mlfqs-nice-10) Starting 10 threads...
-(mlfqs-nice-10) Starting threads took 10 ticks.
-(mlfqs-nice-10) Sleeping 40 seconds to let threads run, please wait...
-(mlfqs-nice-10) Thread 0 received 301 ticks.
-(mlfqs-nice-10) Thread 1 received 301 ticks.
-(mlfqs-nice-10) Thread 2 received 301 ticks.
-(mlfqs-nice-10) Thread 3 received 301 ticks.
-(mlfqs-nice-10) Thread 4 received 301 ticks.
-(mlfqs-nice-10) Thread 5 received 301 ticks.
-(mlfqs-nice-10) Thread 6 received 301 ticks.
-(mlfqs-nice-10) Thread 7 received 301 ticks.
-(mlfqs-nice-10) Thread 8 received 301 ticks.
-(mlfqs-nice-10) Thread 9 received 301 ticks.
-(mlfqs-nice-10) end
-Execution of 'mlfqs-nice-10' complete.
-Timer: 4108 ticks
-Thread: 999 idle ticks, 3112 kernel ticks, 0 user ticks
-Console: 1035 characters output
+Kernel PANIC at ../../tests/threads/tests.c:61 in run_test(): no test named "mlfqs-nice-10"
+Call stack: 0xc002cf41.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 27 ticks
+Thread: 0 idle ticks, 27 kernel ticks, 0 user ticks
+Console: 610 characters output
 Keyboard: 0 keys pressed
-Powering off...
+Powering off..

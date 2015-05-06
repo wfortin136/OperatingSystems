@@ -1,1 +1,5 @@
-PASS
+FAIL
+Kernel panic in run: PANIC at ../../tests/threads/tests.c:61 in run_test(): no test named "mlfqs-fair-20"
+Call stack: 0xc002cf41
+Translation of call stack:
+0xc002cf41: debug_panic (.../../lib/kernel/debug.c:38)

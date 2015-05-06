@@ -10,16 +10,13 @@ Initializing EHCI
 Initializing UHCI
 Boot complete.
 Executing 'mlfqs-load-1':
-(mlfqs-load-1) begin
-(mlfqs-load-1) spinning for up to 45 seconds, please wait...
-(mlfqs-load-1) FAIL: load average stayed below 0.5 for more than 45 seconds
-Kernel PANIC at ../../tests/threads/tests.c:93 in fail(): test failed
-Call stack: 0xc002cd4d.
+Kernel PANIC at ../../tests/threads/tests.c:61 in run_test(): no test named "mlfqs-load-1"
+Call stack: 0xc002cf41.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 4642 ticks
-Thread: 0 idle ticks, 4642 kernel ticks, 0 user ticks
-Console: 748 characters output
+Timer: 27 ticks
+Thread: 0 idle ticks, 27 kernel ticks, 0 user ticks
+Console: 607 characters output
 Keyboard: 0 keys pressed
 Powering off..

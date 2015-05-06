@@ -410,7 +410,7 @@ cond_wait (struct condition *cond, struct lock *lock)
   sema_init (&waiter.semaphore, 0);
 
   list_push_back (&cond->waiters, &waiter.elem);
-  list_sort(&cond->waiters, (list_less_func *) max_sema_p, NULL);
+  //list_sort(&cond->waiters, (list_less_func *) max_sema_p, NULL);
   lock_release (lock);
   sema_down (&waiter.semaphore);
   lock_acquire (lock);
