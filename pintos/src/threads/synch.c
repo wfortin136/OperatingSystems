@@ -61,22 +61,30 @@ sema_init (struct semaphore *sema, unsigned value)
 sema_down (struct semaphore *sema) 
 {
   enum intr_level old_level;
+  int depth;
+  struct thread *t;
+  struct lock *l;
 
   ASSERT (sema != NULL);
   ASSERT (!intr_context ());
 
   old_level = intr_disable ();
+
+  //If taken
   while (sema->value == 0) 
   {
-    //Donate*
-    int depth = 0;
-    struct thread *t = thread_current();
-    struct lock *l = t->lock_waiting_for;
+
+    //Recurse through locks and donate priority if higher
+    depth = 0;
+    t = thread_current();
+    l = t->lock_waiting_for;
     while(l && depth < 8){
       depth++;
+      //If no one is holding the current lock
       if(!l->holder){
         break;
       }
+      //If the current holder has a higher, can't donate
       if(l->holder->priority >= t->priority){
         break;
       }
@@ -120,6 +128,8 @@ sema_try_down (struct semaphore *sema)
   return success;
 }
 
+
+
 /* Up or "V" operation on a semaphore.  Increments SEMA's value
    and wakes up one thread of those waiting for SEMA, if any.
 
@@ -140,7 +150,7 @@ sema_up (struct semaphore *sema)
   }
   sema->value++;
   //Yield if the unblocked thread has a higher priority
-  thread_set_priority(thread_current()->priority);
+  yield_to_highest();
   intr_set_level (old_level);
 }
 
@@ -262,6 +272,7 @@ lock_try_acquire (struct lock *lock)
   return success;
 }
 
+
 /* Releases LOCK, which must be owned by the current thread.
 
    An interrupt handler cannot acquire a lock, so it does not
@@ -272,6 +283,8 @@ lock_release (struct lock *lock)
 {
   struct thread *t;
   struct thread *temp_t;
+  struct list_elem *next;
+  struct list_elem *e;
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
 
@@ -280,8 +293,7 @@ lock_release (struct lock *lock)
   t = thread_current();
 
   //Remove all donors from list who were waiting on this lock
-  struct list_elem *e = list_begin(&t->donors);
-  struct list_elem *next;
+  e = list_begin(&t->donors);
   while(e != list_end(&t->donors)){
     temp_t = list_entry(e, struct thread, donation);
     next = list_next(e);
@@ -407,7 +419,7 @@ cond_wait (struct condition *cond, struct lock *lock)
   sema_init (&waiter.semaphore, 0);
 
   list_push_back (&cond->waiters, &waiter.elem);
-  list_sort(&cond->waiters, (list_less_func *) max_sema_p, NULL);
+  list_sort(&cond->waiters, (list_less_func *) &max_sema_p, NULL);
   lock_release (lock);
   sema_down (&waiter.semaphore);
   lock_acquire (lock);

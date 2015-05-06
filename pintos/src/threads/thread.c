@@ -183,6 +183,7 @@ thread_create (const char *name, int priority,
                thread_func *function, void *aux) 
 {
   struct thread *t;
+  struct thread *temp_t;
   struct kernel_thread_frame *kf;
   struct switch_entry_frame *ef;
   struct switch_threads_frame *sf;
@@ -225,8 +226,16 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
 
+  //Yield if the unblocked thread has higher priority
   old_level = intr_disable ();
-  thread_set_priority(thread_current()->priority);
+  if ( !list_empty(&ready_list) )
+  {
+    temp_t = list_entry(list_front(&ready_list),struct thread, elem);
+    if (thread_current()->priority < temp_t->priority)
+    {
+      thread_yield();
+    }
+  }
   intr_set_level (old_level);
 
   return tid;
@@ -383,6 +392,17 @@ bool return_max_pri(const struct list_elem * current_elem, const struct list_ele
   
 }
 
+void yield_to_highest(){
+  struct thread * temp_t;
+  if ( !list_empty(&ready_list) )
+  {
+    temp_t = list_entry(list_front(&ready_list),struct thread, elem);
+    if (thread_current()->priority < temp_t->priority)
+    {
+      thread_yield();
+    }
+  }
+}
 
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
@@ -392,6 +412,8 @@ thread_set_priority (int new_priority)
   struct thread * t;
   struct thread * temp_t;
   int t_pri, t_prev_pri;
+  int depth;
+  struct lock *l;
 
   enum intr_level old_level = intr_disable();
   t = thread_current();
@@ -407,11 +429,9 @@ thread_set_priority (int new_priority)
     }
   }
 
-  //If I just got a higher priority, donate it to any waiting threads
-  //*
   if (t_prev_pri < t->priority){
-    int depth = 0;
-    struct lock *l = t->lock_waiting_for;
+    depth = 0;
+    l = t->lock_waiting_for;
     while(l && depth < 8){
       depth++;
       if(!l->holder){
@@ -752,3 +772,4 @@ void update_sleeplist(int64_t ticks){
   }
 
 }  
+

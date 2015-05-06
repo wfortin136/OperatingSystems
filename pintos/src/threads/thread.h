@@ -152,6 +152,7 @@ void push_to_sleeplist(void);
 void update_sleeplist(int64_t);
 
 
+void yield_to_highest();
 
 bool return_max_pri(const struct list_elem * current_elem, const struct list_elem * next_elem, void *aux);
 #endif /* threads/thread.h */
