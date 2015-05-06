@@ -225,8 +225,9 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
 
+  old_level = intr_disable ();
   thread_set_priority(thread_current()->priority);
-
+  intr_set_level (old_level);
   return tid;
 }
 
@@ -264,6 +265,7 @@ thread_unblock (struct thread *t)
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
   list_push_back (&ready_list, &t->elem);
+  list_sort(&ready_list, (list_less_func *) &return_max_pri, NULL);
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
