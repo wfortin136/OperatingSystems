@@ -141,4 +141,8 @@ int thread_get_load_avg (void);
 
 void push_to_sleeplist(void);
 void update_sleeplist(int64_t);
+
+
+
+bool return_max_pri(const struct list_elem * current_elem, const struct list_elem * next_elem, void *aux);
 #endif /* threads/thread.h */

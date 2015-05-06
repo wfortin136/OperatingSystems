@@ -333,8 +333,10 @@ thread_yield (void)
   ASSERT (!intr_context ());
 
   old_level = intr_disable ();
-  if (cur != idle_thread) 
+  if (cur != idle_thread) { 
     list_push_back (&ready_list, &cur->elem);
+    list_sort(&ready_list, (list_less_func *) &return_max_pri, NULL);
+  }
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
@@ -369,7 +371,7 @@ bool return_max_pri(const struct list_elem * current_elem, const struct list_ele
   cur_t = cur->priority;
   next_t = next->priority;
 
-  if(cur_t < next_t) {
+  if(cur_t > next_t) {
     return true;
   }
   else{
@@ -387,6 +389,8 @@ thread_set_priority (int new_priority)
   struct thread * this_t;
   int this_t_p;
 
+  //Turn off interupts to avoid race
+  enum intr_level old_level = intr_disable();
   thread_current ()->priority = new_priority;
  
   max_elem = list_max(&ready_list, (list_less_func*) &return_max_pri, NULL); 
@@ -397,6 +401,7 @@ thread_set_priority (int new_priority)
   
   if(this_t_p > new_priority) thread_yield();
 
+  intr_set_level(old_level);
 }
 
 /* Returns the current thread's priority. */
