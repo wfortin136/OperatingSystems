@@ -11,7 +11,7 @@ Initializing UHCI
 Boot complete.
 Executing 'mlfqs-load-avg':
 Kernel PANIC at ../../tests/threads/tests.c:61 in run_test(): no test named "mlfqs-load-avg"
-Call stack: 0xc002cf41.
+Call stack: 0xc002cf31.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.

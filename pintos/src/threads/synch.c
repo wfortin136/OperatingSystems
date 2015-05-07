@@ -144,8 +144,6 @@ sema_up (struct semaphore *sema)
   thread_set_priority(thread_current()->priority);
   intr_set_level (old_level);
 
-  /**********ADDED******/
-  thread_set_priority(thread_current()->priority);
 }
 
 static void sema_test_helper (void *sema_);
@@ -358,23 +356,23 @@ bool max_sema_p (const struct list_elem *current, const struct list_elem *next,
       return true;
     } 
   
-      if(list_empty(&current_sema->semaphore.waiters)){
-          return false;
-        } 
+    if(list_empty(&current_sema->semaphore.waiters)){
+      return false;
+    } 
   
       //Extract max waiter
-      current_max_elem = list_max(&current_sema->semaphore.waiters, (list_less_func*) &return_max_pri, NULL); 
-   next_elem = list_max(&next_sema->semaphore.waiters, (list_less_func*) &return_max_pri, NULL); 
+    current_max_elem = list_max(&current_sema->semaphore.waiters, (list_less_func*) &return_max_pri, NULL); 
+    next_elem = list_max(&next_sema->semaphore.waiters, (list_less_func*) &return_max_pri, NULL); 
   
       //Extract threads
-      max_t = list_entry(current_max_elem, struct thread, elem);
+    max_t = list_entry(current_max_elem, struct thread, elem);
     next_t = list_entry(next_elem, struct thread, elem);
   
-      if(max_t->priority > next_t->priority){
-          return true;
-        } else {
-            return false;
-          }
+    if(max_t->priority > next_t->priority){
+      return true;
+    } else {
+      return false;
+    }
   }
 
 /* Atomically releases LOCK and waits for COND to be signaled by
