@@ -4,7 +4,7 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
-
+#include "synch.h"
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -100,8 +100,14 @@ struct thread
     //Lock thread is waiting for
     struct lock *lock_waiting_for;
 
+    //sleep lock
+    struct semaphore sleep_sema;
+
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
+
+    /* Shared between thread.c and synch.c. */
+    struct list_elem s_elem;              /* List element. */
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -152,6 +158,7 @@ void push_to_sleeplist(void);
 void update_sleeplist(int64_t);
 
 
+void yield_to_highest(void);
 
 bool return_max_pri(const struct list_elem * current_elem, const struct list_elem * next_elem, void *aux);
 #endif /* threads/thread.h */

@@ -603,7 +603,7 @@ log: bochsout.txt
 panic: action=fatal
 user_shortcut: keys=ctrlaltdel
 EOF
-    print BOCHSRC "gdbstub: enabled=1\n" if $debug eq 'gdb';
+    print BOCHSRC "gdbstub: enabled=1 port=1235\n" if $debug eq 'gdb';
     if ($realtime) {
 	print BOCHSRC "clock: sync=realtime\n";
     } else {

@@ -21,7 +21,7 @@ Executing 'priority-preempt':
 (priority-preempt) end
 Execution of 'priority-preempt' complete.
 Timer: 79 ticks
-Thread: 0 idle ticks, 81 kernel ticks, 0 user ticks
+Thread: 0 idle ticks, 82 kernel ticks, 0 user ticks
 Console: 810 characters output
 Keyboard: 0 keys pressed
 Powering off...

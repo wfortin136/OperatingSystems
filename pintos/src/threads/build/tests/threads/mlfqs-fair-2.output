@@ -11,7 +11,7 @@ Initializing UHCI
 Boot complete.
 Executing 'mlfqs-fair-2':
 Kernel PANIC at ../../tests/threads/tests.c:61 in run_test(): no test named "mlfqs-fair-2"
-Call stack: 0xc002cf31.
+Call stack: 0xc002cf49.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.

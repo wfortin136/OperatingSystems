@@ -1,5 +1,5 @@
 FAIL
 Kernel panic in run: PANIC at ../../tests/threads/tests.c:61 in run_test(): no test named "mlfqs-recent-1"
-Call stack: 0xc002cf31
+Call stack: 0xc002cf49
 Translation of call stack:
-0xc002cf31: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002cf49: debug_panic (.../../lib/kernel/debug.c:38)

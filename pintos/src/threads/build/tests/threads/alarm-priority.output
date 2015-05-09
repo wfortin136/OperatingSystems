@@ -23,8 +23,8 @@ Executing 'alarm-priority':
 (alarm-priority) Thread priority 21 woke up.
 (alarm-priority) end
 Execution of 'alarm-priority' complete.
-Timer: 590 ticks
-Thread: 484 idle ticks, 109 kernel ticks, 0 user ticks
+Timer: 589 ticks
+Thread: 485 idle ticks, 106 kernel ticks, 0 user ticks
 Console: 873 characters output
 Keyboard: 0 keys pressed
 Powering off...

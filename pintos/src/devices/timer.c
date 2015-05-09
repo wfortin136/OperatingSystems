@@ -98,13 +98,6 @@ timer_sleep (int64_t ticks)
 
   if( timer_elapsed (start) < ticks)
     push_to_sleeplist();
-  else{
-  /*while (timer_elapsed (start) < ticks){
-    //printf("Id: %d Time Elapsed: %"PRId64 "\n", thread_tid(), timer_elapsed(start));
-    
-    thread_yield ();
-  }*/
-  }
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -181,7 +174,6 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
-  int64_t cur_t;
 
   ticks++;
   thread_tick ();

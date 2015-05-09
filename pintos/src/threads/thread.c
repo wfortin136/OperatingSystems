@@ -44,6 +44,9 @@ static struct thread *initial_thread;
 /* Lock used by allocate_tid(). */
 static struct lock tid_lock;
 
+/* Lock used by allocate_tid(). */
+static struct lock sleep_lock;
+
 /* Stack frame for kernel_thread(). */
 struct kernel_thread_frame 
   {
@@ -76,14 +79,9 @@ static bool is_thread (struct thread *) UNUSED;
 static void *alloc_frame (struct thread *, size_t size);
 static void schedule (void);
 void thread_schedule_tail (struct thread *prev);
+
 static tid_t allocate_tid (void);
 static bool thread_compare(const struct list_elem*, const struct list_elem*,void*);
-
-/*****************************/
-//struct list get_ready_list(void);
-/********************************/
-
-
 
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
@@ -104,6 +102,7 @@ thread_init (void)
   ASSERT (intr_get_level () == INTR_OFF);
 
   lock_init (&tid_lock);
+  lock_init (&sleep_lock);
   list_init (&ready_list);
   list_init (&all_list);
   list_init (&sleep_list);
@@ -225,8 +224,9 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
 
+  //Yield if the unblocked thread has higher priority
   old_level = intr_disable ();
-  thread_set_priority(thread_current()->priority);
+  yield_to_highest();
   intr_set_level (old_level);
   return tid;
 }
@@ -382,6 +382,17 @@ bool return_max_pri(const struct list_elem * current_elem, const struct list_ele
   
 }
 
+void yield_to_highest(){
+  struct thread * temp_t;
+  if ( !list_empty(&ready_list) )
+  {
+    temp_t = list_entry(list_front(&ready_list),struct thread, elem);
+    if (thread_current()->priority < temp_t->priority)
+    {
+      thread_yield();
+    }
+  }
+}
 
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
@@ -390,7 +401,9 @@ thread_set_priority (int new_priority)
   struct list_elem * max_elem;
   struct thread * t;
   struct thread * temp_t;
-  int t_pri, t_prev_pri;
+  int t_prev_pri;
+  int depth;
+  struct lock *l;
 
   enum intr_level old_level = intr_disable();
   t = thread_current();
@@ -406,11 +419,9 @@ thread_set_priority (int new_priority)
     }
   }
 
-  //If I just got a higher priority, donate it to any waiting threads
-  //*
   if (t_prev_pri < t->priority){
-    int depth = 0;
-    struct lock *l = t->lock_waiting_for;
+    depth = 0;
+    l = t->lock_waiting_for;
     while(l && depth < 8){
       depth++;
       if(!l->holder){
@@ -563,6 +574,9 @@ init_thread (struct thread *t, const char *name, int priority)
   t->magic = THREAD_MAGIC;
   list_push_back (&all_list, &t->allelem);
 
+  //Initialize sleep lock
+  sema_init(&t->sleep_sema, 0);
+
   //Set base priority
   t->priority_base = priority;
   t->lock_waiting_for = NULL;
@@ -679,20 +693,20 @@ allocate_tid (void)
 
   return tid;
 }
-
+
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
 
 
-bool thread_compare(const struct list_elem * current_elem, const struct list_elem * next_elem, void *aux){
+static bool thread_compare(const struct list_elem * current_elem, const struct list_elem * next_elem, void *aux){
   
   struct thread * cur;
   struct thread * next;
   int64_t cur_t, next_t;
 
-  cur = list_entry(current_elem, struct thread, elem);
-  next = list_entry(next_elem, struct thread, elem);
+  cur = list_entry(current_elem, struct thread, s_elem);
+  next = list_entry(next_elem, struct thread, s_elem);
   
   cur_t = cur->sleep_tick;
   next_t = next->sleep_tick;
@@ -710,44 +724,33 @@ void push_to_sleeplist(void)
 {
   struct list_elem *current_elem;
   struct thread * this;
-  struct lock list_i;
-  enum intr_level intr_state; 
-  
-  this = thread_current();
-  current_elem = &(this->elem);
 
-  lock_init(&list_i);
+  this = thread_current();
+  current_elem = &(this->s_elem);
+
+  lock_acquire(&sleep_lock);
+  list_insert_ordered(&sleep_list, current_elem, (list_less_func  *) &thread_compare, NULL); 
   
-  if(list_empty(&sleep_list)){
-    
-    intr_state = intr_disable();
-    list_push_front(&sleep_list, current_elem); 
-    thread_block();
-    intr_set_level(intr_state);
-  }
-  else { 
-    intr_state = intr_disable();
-    list_insert_ordered(&sleep_list, current_elem, (list_less_func  *) &thread_compare, NULL); 
-    thread_block();
-    intr_set_level(intr_state);
-  }  
+  lock_release(&sleep_lock);
+  sema_down(&thread_current()->sleep_sema); 
+
 }
 
 void update_sleeplist(int64_t ticks){
   struct list_elem * e;
   struct thread * cur;
   int64_t cur_t;
-
   e = list_begin(&sleep_list);
 
   while(e !=list_end(&sleep_list)){
-    cur = list_entry(e, struct thread, elem); 
+    cur = list_entry(e, struct thread, s_elem); 
     cur_t = cur->sleep_tick;  
     if(cur_t <= ticks) {
       e = list_remove(e);
-      thread_unblock(cur);
+      sema_up(&cur->sleep_sema);
     }
     else break;
   }
 
 }  
+

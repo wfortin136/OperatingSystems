@@ -133,7 +133,8 @@ document loadusersymbols
 end
 
 define debugpintos
-    target remote localhost:1234
+    target remote localhost:1235
+    #target remote localhost:1234
 end
 document debugpintos
     Attach debugger to pintos process
